@@ -50,7 +50,7 @@ Noise types:
 
 ```text
 gaussian: ratio 0.20
-distant_speech: ratio 0.20
+distant_speech: ratio 0.40
 subway: ratio 0.60
 ```
 
@@ -92,6 +92,15 @@ Parameter sweep for least squares:
 python experiments/run_experiments.py --method least_squares --dataset all --parameter-sweep
 ```
 
+Tune FFT or L1 parameters on a smaller clip subset:
+
+```powershell
+python experiments/tune_parameters.py --method fft_threshold --dataset all --clean-clip-limit 2
+python experiments/tune_parameters.py --method l1_norm --dataset all --clean-clip-limit 1 --profile focused
+```
+
+L1 tuning is much slower than FFT because each candidate solves many sparse reconstruction windows.
+
 Outputs are organized by method:
 
 ```text
@@ -100,6 +109,26 @@ outputs/experiments/<method>/<dataset>/metrics/
 outputs/experiments/<method>/<dataset>/plots/
 outputs/experiments/<method>/parameter_sweep/
 ```
+
+## Tuned Parameters
+
+FFT thresholding was changed from a single full-clip FFT to overlapping window reconstruction. The tuning pass tried `window_size` values `512`, `1024`, and `2048`; `hop_size` values at one-half and one-quarter of the window; `keep_ratio` values from `0.05` through `1.0`; `f_min = 50`; and dataset-specific `f_max` values. The chosen presets are:
+
+```text
+speech: keep_ratio 1.0, window_size 1024, hop_size 256, f_min 50, f_max 8000
+instrumental_music: keep_ratio 1.0, window_size 1024, hop_size 256, f_min 50, f_max 4000
+piano_notes_chords: keep_ratio 1.0, window_size 2048, hop_size 512, f_min 50, f_max 4000
+```
+
+L1 tuning focused on the highest-impact parameters: `lambda_reg`, `n_freqs`, and `window_size`, while keeping `grid_type = linear`, `f_min = 50`, `tol = 0.0001`, and `max_iter = 80`. The search tried `window_size` values `512`, `1024`, and `2048`; `n_freqs` values `80`, `120`, and `200`; and `lambda_reg` values from `0.005` to `0.08`. The chosen presets are:
+
+```text
+speech: n_freqs 200, f_max 8000, lambda_reg 0.08, window_size 512, hop_size 256
+instrumental_music: n_freqs 200, f_max 5000, lambda_reg 0.08, window_size 512, hop_size 256
+piano_notes_chords: n_freqs 200, f_max 5000, lambda_reg 0.08, window_size 512, hop_size 256
+```
+
+Ranked tuning outputs are written under `outputs/experiments/<method>/parameter_sweep/`.
 
 ## Adding Methods
 

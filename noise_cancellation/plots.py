@@ -6,6 +6,7 @@ from pathlib import Path
 
 
 PLOT_COLORS = ["#2563eb", "#dc2626", "#16a34a", "#9333ea", "#ea580c"]
+COMPARISON_COLORS = ["#64748b", "#16a34a"]
 
 
 def read_csv(path: Path) -> list[dict[str, str]]:
@@ -134,6 +135,83 @@ def write_summary_bar_svg(csv_path: Path, output_path: Path, metric: str, title:
         parts.append(f'<text x="{cx:.1f}" y="{value_y:.1f}" text-anchor="middle" font-family="Arial" font-size="12">{value:.2f}</text>')
 
     parts.append(f'<text transform="translate(20 {height/2}) rotate(-90)" text-anchor="middle" font-family="Arial" font-size="14">{metric}</text>')
+    parts.append("</svg>")
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text("\n".join(parts), encoding="utf-8")
+
+
+def write_grouped_bar_svg(
+    csv_path: Path,
+    output_path: Path,
+    metrics: tuple[str, ...],
+    labels: tuple[str, ...],
+    title: str,
+    y_label: str,
+) -> None:
+    rows = read_csv(csv_path)
+    if not rows:
+        return
+    if len(metrics) != len(labels):
+        raise ValueError("metrics and labels must have the same length.")
+
+    width, height = 820, 480
+    margin_left, margin_right, margin_top, margin_bottom = 82, 40, 58, 100
+    plot_w = width - margin_left - margin_right
+    plot_h = height - margin_top - margin_bottom
+    values = [float(row[metric]) for row in rows for metric in metrics]
+    y_min = min(0.0, min(values))
+    y_max = max(values)
+    if y_min == y_max:
+        y_max += 1.0
+    pad = (y_max - y_min) * 0.08
+    y_min -= pad
+    y_max += pad
+
+    def sy(y: float) -> float:
+        return margin_top + (y_max - y) / (y_max - y_min) * plot_h
+
+    slot_w = plot_w / len(rows)
+    group_w = min(150, slot_w * 0.72)
+    bar_w = group_w / len(metrics) * 0.82
+    zero_y = sy(0.0)
+
+    parts = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
+        '<rect width="100%" height="100%" fill="white"/>',
+        f'<text x="{width/2}" y="30" text-anchor="middle" font-family="Arial" font-size="20" font-weight="700">{title}</text>',
+        f'<line x1="{margin_left}" y1="{zero_y:.1f}" x2="{margin_left + plot_w}" y2="{zero_y:.1f}" stroke="#111827"/>',
+        f'<line x1="{margin_left}" y1="{margin_top}" x2="{margin_left}" y2="{margin_top + plot_h}" stroke="#111827"/>',
+    ]
+
+    for i in range(5):
+        y = y_min + (y_max - y_min) * i / 4
+        py = sy(y)
+        parts.append(f'<line x1="{margin_left - 6}" y1="{py:.1f}" x2="{margin_left}" y2="{py:.1f}" stroke="#111827"/>')
+        parts.append(f'<line x1="{margin_left}" y1="{py:.1f}" x2="{margin_left + plot_w}" y2="{py:.1f}" stroke="#e5e7eb"/>')
+        parts.append(f'<text x="{margin_left - 12}" y="{py + 4:.1f}" text-anchor="end" font-family="Arial" font-size="12">{y:.2f}</text>')
+
+    for row_index, row in enumerate(rows):
+        group_left = margin_left + slot_w * row_index + (slot_w - group_w) / 2
+        label_x = margin_left + slot_w * row_index + slot_w / 2
+        for metric_index, metric in enumerate(metrics):
+            value = float(row[metric])
+            x = group_left + metric_index * (group_w / len(metrics)) + (group_w / len(metrics) - bar_w) / 2
+            top_y = min(sy(value), zero_y)
+            bar_h = abs(zero_y - sy(value))
+            color = COMPARISON_COLORS[metric_index % len(COMPARISON_COLORS)]
+            parts.append(f'<rect x="{x:.1f}" y="{top_y:.1f}" width="{bar_w:.1f}" height="{bar_h:.1f}" fill="{color}"/>')
+            value_y = top_y - 8 if value >= 0 else top_y + bar_h + 16
+            parts.append(f'<text x="{x + bar_w/2:.1f}" y="{value_y:.1f}" text-anchor="middle" font-family="Arial" font-size="11">{value:.3f}</text>')
+        parts.append(f'<text x="{label_x:.1f}" y="{height - 54}" text-anchor="middle" font-family="Arial" font-size="12">{row["noise_type"]}</text>')
+
+    legend_x = width - 230
+    for index, label in enumerate(labels):
+        legend_y = margin_top + 22 * index
+        color = COMPARISON_COLORS[index % len(COMPARISON_COLORS)]
+        parts.append(f'<rect x="{legend_x}" y="{legend_y - 10}" width="12" height="12" fill="{color}"/>')
+        parts.append(f'<text x="{legend_x + 18}" y="{legend_y}" font-family="Arial" font-size="13">{label}</text>')
+
+    parts.append(f'<text transform="translate(22 {height/2}) rotate(-90)" text-anchor="middle" font-family="Arial" font-size="14">{y_label}</text>')
     parts.append("</svg>")
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text("\n".join(parts), encoding="utf-8")

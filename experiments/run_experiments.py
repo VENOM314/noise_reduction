@@ -21,7 +21,7 @@ from noise_cancellation.data_prep.datasets import DATASET_NAMES, normalize_datas
 from noise_cancellation.methods import available_methods, create_method
 from noise_cancellation.methods.base import DenoisingMethod
 from noise_cancellation.metrics import snr_db, spectrogram_corr
-from noise_cancellation.plots import write_metric_svg, write_summary_bar_svg
+from noise_cancellation.plots import write_grouped_bar_svg, write_metric_svg, write_summary_bar_svg
 
 
 DATA_ROOT = PROJECT_ROOT / "data"
@@ -31,11 +31,11 @@ NOISY_ROOT = DATA_ROOT / "noisy"
 
 def reset_output_dir(path: Path) -> None:
     if path.exists():
-        shutil.rmtree(path, onexc=retry_readonly_remove)
+        shutil.rmtree(path, onerror=retry_readonly_remove)
     path.mkdir(parents=True, exist_ok=True)
 
 
-def retry_readonly_remove(function, path: str, _excinfo) -> None:
+def retry_readonly_remove(function, path: str, _exc_info) -> None:
     Path(path).chmod(stat.S_IWRITE)
     function(path)
 
@@ -170,11 +170,13 @@ def evaluate_dataset(
     write_csv(detail_csv, rows, ["file", "noise_type", *metric_fields])
     write_csv(summary_csv, summary_rows, ["noise_type", "count", *metric_fields])
     write_summary_bar_svg(summary_csv, plots_dir / "snr_improvement_by_noise.svg", "snr_improvement", "SNR improvement by noise")
-    write_summary_bar_svg(
+    write_grouped_bar_svg(
         summary_csv,
-        plots_dir / "spectrogram_corr_denoised_by_noise.svg",
-        "spectrogram_corr_denoised",
-        "Denoised spectrogram correlation by noise",
+        plots_dir / "spectrogram_corr_by_noise.svg",
+        ("spectrogram_corr_noisy", "spectrogram_corr_denoised"),
+        ("Noisy", "Denoised"),
+        "Spectrogram correlation by noise",
+        "spectrogram correlation",
     )
     return rows, summary_rows
 

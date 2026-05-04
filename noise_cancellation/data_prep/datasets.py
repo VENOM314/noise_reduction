@@ -29,11 +29,11 @@ EXPERIMENT_ALIASES = {
 
 def reset_generated_dir(path: Path) -> None:
     if path.exists():
-        shutil.rmtree(path, onexc=retry_readonly_remove)
+        shutil.rmtree(path, onerror=retry_readonly_remove)
     path.mkdir(parents=True, exist_ok=True)
 
 
-def retry_readonly_remove(function, path: str, _excinfo) -> None:
+def retry_readonly_remove(function, path: str, _exc_info) -> None:
     Path(path).chmod(stat.S_IWRITE)
     function(path)
 
