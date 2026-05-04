@@ -89,17 +89,17 @@
           "grid_type": "linear",
           "n_freqs": 500,
           "f_min": 50,
-          "f_max": 4000,
-          "K": 250,
-          "window_size": 2048,
-          "hop_size": 512
+          "f_max": 7000,
+          "K": 500,
+          "window_size": 1024,
+          "hop_size": 256
         },
         "instrumental_music": {
           "grid_type": "linear",
           "n_freqs": 500,
           "f_min": 50,
-          "f_max": 5000,
-          "K": 40,
+          "f_max": 4000,
+          "K": 100,
           "window_size": 2048,
           "hop_size": 512
         },
@@ -107,8 +107,8 @@
           "grid_type": "linear",
           "n_freqs": 500,
           "f_min": 50,
-          "f_max": 5000,
-          "K": 40,
+          "f_max": 4000,
+          "K": 25,
           "window_size": 2048,
           "hop_size": 512
         }

@@ -8,6 +8,8 @@ from statistics import mean
 from time import perf_counter
 from typing import Any
 
+import numpy as np
+
 PROJECT_ROOT = Path.cwd()
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
@@ -75,12 +77,44 @@ def l1_candidates(dataset_name: str, config: dict[str, Any], profile: str) -> li
     return candidates
 
 
+def least_squares_candidates(dataset_name: str, profile: str) -> list[dict[str, Any]]:
+    if dataset_name == "speech":
+        f_max_values = (4000, 6000, 7000)
+        k_ratios = (0.4, 0.7, 1.0) if profile == "focused" else (0.25, 0.4, 0.7, 1.0)
+    else:
+        f_max_values = (4000, 5000, 7000)
+        k_ratios = (0.05, 0.1, 0.2, 0.4) if profile == "focused" else (0.05, 0.08, 0.1, 0.2, 0.4)
+
+    window_sizes = (1024, 2048) if profile == "focused" else (512, 1024, 2048)
+    n_freqs_values = (200, 500)
+    candidates = []
+    for window_size in window_sizes:
+        for n_freqs in n_freqs_values:
+            for k_ratio in k_ratios:
+                k_value = max(1, min(n_freqs, int(round(n_freqs * k_ratio))))
+                for f_max in f_max_values:
+                    candidates.append(
+                        {
+                            "grid_type": "linear",
+                            "n_freqs": n_freqs,
+                            "f_min": 50,
+                            "f_max": f_max,
+                            "K": k_value,
+                            "window_size": window_size,
+                            "hop_size": window_size // 4,
+                        }
+                    )
+    return candidates
+
+
 def method_candidates(method_name: str, dataset_name: str, config: dict[str, Any], profile: str) -> list[dict[str, Any]]:
     if method_name == "fft_threshold":
         return fft_candidates(dataset_name)
     if method_name == "l1_norm":
         return l1_candidates(dataset_name, config, profile)
-    raise ValueError("Tuning candidates are defined for fft_threshold and l1_norm.")
+    if method_name == "least_squares":
+        return least_squares_candidates(dataset_name, profile)
+    raise ValueError("Tuning candidates are defined for fft_threshold, l1_norm, and least_squares.")
 
 
 def load_eval_items(
@@ -174,7 +208,11 @@ def tune_method_dataset(
     summary_output_rows = []
     start_time = perf_counter()
     for candidate_id, params in enumerate(candidates, start=1):
-        ranking_row, summary_rows = score_candidate(method_name, dataset_name, config, params, items)
+        try:
+            ranking_row, summary_rows = score_candidate(method_name, dataset_name, config, params, items)
+        except np.linalg.LinAlgError as exc:
+            print(f"  skipped candidate {candidate_id}: {exc}")
+            continue
         ranking_row.update(
             {
                 "method": method_name,
@@ -250,7 +288,7 @@ def tune_method_dataset(
 def main() -> None:
     config = load_config(PROJECT_ROOT)
     parser = argparse.ArgumentParser()
-    parser.add_argument("--method", choices=("fft_threshold", "l1_norm"), required=True)
+    parser.add_argument("--method", choices=("fft_threshold", "l1_norm", "least_squares"), required=True)
     parser.add_argument("--dataset", choices=("all", *DATASET_NAMES), default="all")
     parser.add_argument("--clean-clip-limit", type=int, default=2)
     parser.add_argument("--profile", choices=("coarse", "focused"), default="coarse")

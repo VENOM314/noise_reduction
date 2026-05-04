@@ -92,11 +92,12 @@ Parameter sweep for least squares:
 python experiments/run_experiments.py --method least_squares --dataset all --parameter-sweep
 ```
 
-Tune FFT or L1 parameters on a smaller clip subset:
+Tune FFT, L1, or least-squares parameters on a smaller clip subset:
 
 ```powershell
 python experiments/tune_parameters.py --method fft_threshold --dataset all --clean-clip-limit 2
 python experiments/tune_parameters.py --method l1_norm --dataset all --clean-clip-limit 1 --profile focused
+python experiments/tune_parameters.py --method least_squares --dataset all --clean-clip-limit 2 --profile focused
 ```
 
 L1 tuning is much slower than FFT because each candidate solves many sparse reconstruction windows.
@@ -126,6 +127,14 @@ L1 tuning focused on the highest-impact parameters: `lambda_reg`, `n_freqs`, and
 speech: n_freqs 200, f_max 8000, lambda_reg 0.08, window_size 512, hop_size 256
 instrumental_music: n_freqs 200, f_max 5000, lambda_reg 0.08, window_size 512, hop_size 256
 piano_notes_chords: n_freqs 200, f_max 5000, lambda_reg 0.08, window_size 512, hop_size 256
+```
+
+Least-squares tuning focused on `K`, `n_freqs`, `window_size`, `hop_size`, and `f_max`, while keeping `grid_type = linear` and `f_min = 50`. The focused search tried `window_size` values `1024` and `2048`, `n_freqs` values `200` and `500`, dataset-specific `K` ratios, and `f_max` values up to `7000`. Numerically unstable high-frequency candidates were skipped if the pseudoinverse SVD did not converge. The chosen presets are:
+
+```text
+speech: n_freqs 500, f_max 7000, K 500, window_size 1024, hop_size 256
+instrumental_music: n_freqs 500, f_max 4000, K 100, window_size 2048, hop_size 512
+piano_notes_chords: n_freqs 500, f_max 4000, K 25, window_size 2048, hop_size 512
 ```
 
 Ranked tuning outputs are written under `outputs/experiments/<method>/parameter_sweep/`.
