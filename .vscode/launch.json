@@ -1,0 +1,173 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Prepare Data: all",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/experiments/prepare_data.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      },
+      "args": [
+        "--dataset",
+        "all"
+      ]
+    },
+    {
+      "name": "Prepare Data: speech",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/experiments/prepare_data.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      },
+      "args": [
+        "--dataset",
+        "speech"
+      ]
+    },
+    {
+      "name": "Run least_squares: all",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/experiments/run_experiments.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      },
+      "args": [
+        "--method",
+        "least_squares",
+        "--dataset",
+        "all"
+        // Uncomment to limit the number of noisy files for a quicker run:
+        // ,"--limit",
+        // "5"
+      ]
+    },
+    {
+      "name": "Run least_squares: speech",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/experiments/run_experiments.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      },
+      "args": [
+        "--method",
+        "least_squares",
+        "--dataset",
+        "speech"
+        // Uncomment to limit the number of noisy files for a quicker run:
+        // ,"--limit",
+        // "5"
+      ]
+    },
+    {
+      "name": "Run least_squares: instrumental_music",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/experiments/run_experiments.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      },
+      "args": [
+        "--method",
+        "least_squares",
+        "--dataset",
+        "instrumental_music"
+        // Uncomment to limit the number of noisy files for a quicker run:
+        // ,"--limit",
+        // "5"
+      ]
+    },
+    {
+      "name": "Run least_squares: piano_notes_chords",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/experiments/run_experiments.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      },
+      "args": [
+        "--method",
+        "least_squares",
+        "--dataset",
+        "piano_notes_chords"
+        // Uncomment to limit the number of noisy files for a quicker run:
+        // ,"--limit",
+        // "5"
+      ]
+    },
+    {
+      "name": "Run fft_threshold: all",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/experiments/run_experiments.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      },
+      "args": [
+        "--method",
+        "fft_threshold",
+        "--dataset",
+        "all"
+        // Uncomment to limit the number of noisy files for a quicker run:
+        // ,"--limit",
+        // "5"
+      ]
+    },
+    {
+      "name": "Run l1_norm: all",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/experiments/run_experiments.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      },
+      "args": [
+        "--method",
+        "l1_norm",
+        "--dataset",
+        "all"
+        // Uncomment to limit the number of noisy files for a quicker run:
+        // ,"--limit",
+        // "5"
+      ]
+    },
+    {
+      "name": "Parameter sweep: least_squares",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/experiments/run_experiments.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      },
+      "args": [
+        "--method",
+        "least_squares",
+        "--dataset",
+        "all",
+        "--parameter-sweep"
+      ]
+    }
+  ]
+}

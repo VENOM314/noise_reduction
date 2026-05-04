@@ -1,0 +1,113 @@
+{
+  "sample_rate": 16000,
+  "n_clean_clips": 10,
+  "clip_seconds_by_dataset": {
+    "speech": 8.0,
+    "instrumental_music": 8.0
+  },
+  "noise_ratios": {
+    "gaussian": 0.20,
+    "distant_speech": 0.20,
+    "subway": 0.60
+  },
+  "active_noise_types": [
+    "gaussian",
+    "distant_speech",
+    "subway"
+  ],
+  "datasets": [
+    "piano_notes_chords",
+    "speech",
+    "instrumental_music"
+  ],
+  "methods": {
+    "fft_threshold": {
+      "parameter_presets": {
+        "speech": {
+          "keep_ratio": 0.08
+        },
+        "instrumental_music": {
+          "keep_ratio": 0.04
+        },
+        "piano_notes_chords": {
+          "keep_ratio": 0.03
+        }
+      }
+    },
+    "l1_norm": {
+      "parameter_presets": {
+        "speech": {
+          "grid_type": "linear",
+          "n_freqs": 120,
+          "f_min": 50,
+          "f_max": 4000,
+          "lambda_reg": 0.015,
+          "max_iter": 80,
+          "tol": 0.0001,
+          "window_size": 1024,
+          "hop_size": 512
+        },
+        "instrumental_music": {
+          "grid_type": "linear",
+          "n_freqs": 120,
+          "f_min": 50,
+          "f_max": 5000,
+          "lambda_reg": 0.02,
+          "max_iter": 80,
+          "tol": 0.0001,
+          "window_size": 1024,
+          "hop_size": 512
+        },
+        "piano_notes_chords": {
+          "grid_type": "linear",
+          "n_freqs": 120,
+          "f_min": 50,
+          "f_max": 5000,
+          "lambda_reg": 0.02,
+          "max_iter": 80,
+          "tol": 0.0001,
+          "window_size": 1024,
+          "hop_size": 512
+        }
+      }
+    },
+    "least_squares": {
+      "parameter_presets": {
+        "speech": {
+          "grid_type": "linear",
+          "n_freqs": 500,
+          "f_min": 50,
+          "f_max": 4000,
+          "K": 250,
+          "window_size": 2048,
+          "hop_size": 512
+        },
+        "instrumental_music": {
+          "grid_type": "linear",
+          "n_freqs": 500,
+          "f_min": 50,
+          "f_max": 5000,
+          "K": 40,
+          "window_size": 2048,
+          "hop_size": 512
+        },
+        "piano_notes_chords": {
+          "grid_type": "linear",
+          "n_freqs": 500,
+          "f_min": 50,
+          "f_max": 5000,
+          "K": 40,
+          "window_size": 2048,
+          "hop_size": 512
+        }
+      },
+      "parameter_sweep": {
+        "K_values": [40, 80, 120, 250, 350],
+        "n_freqs": 500,
+        "window_size": 2048,
+        "hop_size": 512,
+        "clean_clip_limit": 5
+      }
+    }
+  }
+}
