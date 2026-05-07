@@ -6,9 +6,9 @@
     "instrumental_music": 8.0
   },
   "noise_ratios": {
-    "gaussian": 0.20,
-    "distant_speech": 0.40,
-    "subway": 0.60
+    "gaussian": 0.2,
+    "distant_speech": 0.4,
+    "subway": 0.6
   },
   "active_noise_types": [
     "gaussian",
@@ -125,6 +125,40 @@
         "window_size": 2048,
         "hop_size": 512,
         "clean_clip_limit": 5
+      }
+    },
+    "omp": {
+      "parameter_presets": {
+        "speech": {
+          "grid_type": "linear",
+          "n_freqs": 400,
+          "f_min": 50,
+          "f_max": 7000,
+          "K": 20,
+          "tol": 0.01,
+          "window_size": 1024,
+          "hop_size": 256
+        },
+        "instrumental_music": {
+          "grid_type": "linear",
+          "n_freqs": 600,
+          "f_min": 50,
+          "f_max": 5000,
+          "K": 40,
+          "tol": 0.01,
+          "window_size": 2048,
+          "hop_size": 512
+        },
+        "piano_notes_chords": {
+          "grid_type": "linear",
+          "n_freqs": 600,
+          "f_min": 50,
+          "f_max": 5000,
+          "K": 20,
+          "tol": 0.01,
+          "window_size": 2048,
+          "hop_size": 512
+        }
       }
     }
   }
