@@ -106,6 +106,65 @@ def least_squares_candidates(dataset_name: str, profile: str) -> list[dict[str, 
                     )
     return candidates
 
+def omp_candidates(dataset_name: str, config: dict[str, Any], profile: str) -> list[dict[str, Any]]:
+    base = config["methods"]["omp"]["parameter_presets"][dataset_name]
+
+    # Inherit framing/band defaults from the current OMP preset.
+    grid_type = base.get("grid_type", "linear")
+    f_min = base.get("f_min", 50)
+    f_max = base["f_max"]
+
+    if profile == "focused":
+        # Keep this small and practical.
+        if dataset_name == "speech":
+            K_values = (5, 10, 20)
+            n_freqs_values = (100, 200, 400)
+            window_sizes = (1024,)
+        elif dataset_name == "instrumental_music":
+            K_values = (10, 20, 40)
+            n_freqs_values = (200, 400, 600)
+            window_sizes = (2048,)
+        else:  # piano_notes_chords
+            K_values = (5, 10, 20)
+            n_freqs_values = (200, 400, 600)
+            window_sizes = (2048,)
+
+        tol_values = (1e-2, 1e-3)
+    else:
+        if dataset_name == "speech":
+            K_values = (5, 10, 20, 40)
+            n_freqs_values = (80, 120, 200, 400)
+            window_sizes = (512, 1024)
+        elif dataset_name == "instrumental_music":
+            K_values = (10, 20, 40, 80)
+            n_freqs_values = (100, 200, 400, 600)
+            window_sizes = (1024, 2048)
+        else:  # piano_notes_chords
+            K_values = (5, 10, 20, 40)
+            n_freqs_values = (100, 200, 400, 600)
+            window_sizes = (1024, 2048)
+
+        tol_values = (1e-2, 1e-3)
+
+    candidates = []
+    for window_size in window_sizes:
+        for n_freqs in n_freqs_values:
+            for K in K_values:
+                for tol in tol_values:
+                    candidates.append(
+                        {
+                            "grid_type": grid_type,
+                            "n_freqs": n_freqs,
+                            "f_min": f_min,
+                            "f_max": f_max,
+                            "K": K,
+                            "tol": tol,
+                            "window_size": window_size,
+                            "hop_size": window_size // 4,
+                        }
+                    )
+    return candidates
+
 
 def method_candidates(method_name: str, dataset_name: str, config: dict[str, Any], profile: str) -> list[dict[str, Any]]:
     if method_name == "fft_threshold":
@@ -114,8 +173,9 @@ def method_candidates(method_name: str, dataset_name: str, config: dict[str, Any
         return l1_candidates(dataset_name, config, profile)
     if method_name == "least_squares":
         return least_squares_candidates(dataset_name, profile)
-    raise ValueError("Tuning candidates are defined for fft_threshold, l1_norm, and least_squares.")
-
+    if method_name == "omp":
+        return omp_candidates(dataset_name, config, profile)
+    raise ValueError("Tuning candidates are defined for fft_threshold, l1_norm, least_squares, and omp.")
 
 def load_eval_items(
     method_name: str,
@@ -288,7 +348,7 @@ def tune_method_dataset(
 def main() -> None:
     config = load_config(PROJECT_ROOT)
     parser = argparse.ArgumentParser()
-    parser.add_argument("--method", choices=("fft_threshold", "l1_norm", "least_squares"), required=True)
+    parser.add_argument("--method", choices=("fft_threshold", "l1_norm", "least_squares", "omp"), required=True)    
     parser.add_argument("--dataset", choices=("all", *DATASET_NAMES), default="all")
     parser.add_argument("--clean-clip-limit", type=int, default=2)
     parser.add_argument("--profile", choices=("coarse", "focused"), default="coarse")
